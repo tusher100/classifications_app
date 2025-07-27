@@ -45,15 +45,52 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> pickImage() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile == null) return;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Take a photo'),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final pickedFile = await picker.pickImage(
+                    source: ImageSource.camera,
+                  );
+                  if (pickedFile == null) return;
+                  setState(() {
+                    _image = File(pickedFile.path);
+                  });
+                  await classifyImage(_image!);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo),
+                title: const Text('Choose from gallery'),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final pickedFile = await picker.pickImage(
+                    source: ImageSource.gallery,
+                  );
+                  if (pickedFile == null) return;
+                  setState(() {
+                    _image = File(pickedFile.path);
+                  });
+                  await classifyImage(_image!);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+}
 
-    setState(() {
-      _image = File(pickedFile.path);
-    });
-
-    await classifyImage(_image!);
-  }
 
   Uint8List imageToByteListFloat32(img.Image image) {
     var convertedBytes = Float32List(inputSize * inputSize * 3);
